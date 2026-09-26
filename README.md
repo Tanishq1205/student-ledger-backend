@@ -4,6 +4,13 @@ A high-performance backend ledger system built with Python, FastAPI, and SQLite.
 
 ---
 
+## 🌐 Live Service & Documentation
+* **Interactive API Documentation (Swagger UI):** [https://student-ledger-backend.onrender.com/docs](https://student-ledger-backend.onrender.com/docs)
+* **Base API Health Check:** [https://student-ledger-backend.onrender.com](https://student-ledger-backend.onrender.com)
+* **Repository:** [https://github.com/Tanishq1205/student-ledger-backend](https://github.com/Tanishq1205/student-ledger-backend)
+
+---
+
 ## Key Features
 
 - **Relational Data Modeling:** Normalized SQLite schema with foreign key constraints linking student profiles to ledger transactions.
