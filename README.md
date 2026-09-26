@@ -43,7 +43,7 @@ A high-performance backend ledger system built with Python, FastAPI, and SQLite.
 ### 1. Clone & Set Up Virtual Environment
 
 ```bash
-git clone [https://github.com/](https://github.com/)<your-username>/ledger-api.git
+git clone [https://github.com/](https://github.com/)<Tanishq1205>/student-ledger-backend.git
 cd ledger-api
 python -m venv venv
 # Windows:

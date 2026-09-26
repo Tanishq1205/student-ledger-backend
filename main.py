@@ -6,7 +6,7 @@ import sqlite3
 
 app = FastAPI(title="Operations & Ledger API")
 
-# API Key configuration
+
 API_KEY_NAME = "X-Admin-Key"
 ADMIN_API_KEY = "admin-secret-2026"
 
