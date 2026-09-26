@@ -3,10 +3,11 @@ from fastapi.security import APIKeyHeader
 from typing import List, Optional
 from pydantic import BaseModel, Field
 import sqlite3
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Operations & Ledger API")
 
-from fastapi.middleware.cors import CORSMiddleware
+
 
 
 app.add_middleware(
