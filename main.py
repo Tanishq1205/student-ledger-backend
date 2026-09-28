@@ -5,10 +5,51 @@ from pydantic import BaseModel, Field
 import sqlite3
 from fastapi.middleware.cors import CORSMiddleware
 
+def init_db():
+    conn = sqlite3.connect("test.db")
+    cursor = conn.cursor()
+    
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS students (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            course TEXT NOT NULL,
+            balance INTEGER DEFAULT 0
+        )
+    """)
+
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS payments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            amount INTEGER NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students (id)
+        )
+    """)
+
+    
+    cursor.execute("SELECT COUNT(*) FROM students")
+    if cursor.fetchone()[0] == 0:
+        cursor.executemany("""
+            INSERT INTO students (name, course, balance)
+            VALUES (?, ?, ?)
+        """, [
+            ("Tanishq Dethe", "Computer Science", 1500),
+            ("Aarav Sharma", "Information Technology", 0),
+            ("Rohan Patil", "Data Science", 3200),
+            ("Neha Verma", "AI & ML", 4500)
+        ])
+
+    conn.commit()
+    conn.close()
+
+
+init_db()
+
 app = FastAPI(title="Operations & Ledger API")
-
-
-
 
 app.add_middleware(
     CORSMiddleware,
