@@ -191,7 +191,17 @@ def record_batch_payments(payments: List[PaymentCreate]):
                 )
 
             current_balance = student["fee_balance"]
-            
+
+            #  Make sure these lines exist:
+            new_balance = current_balance - payment.amount
+            cursor.execute(
+                "UPDATE students SET fee_balance = ? WHERE id = ?",
+                (new_balance, payment.student_id),
+            )
+            cursor.execute(
+                "INSERT INTO payments (student_id, amount) VALUES (?, ?)",
+                (payment.student_id, payment.amount),
+            )
 
         conn.commit()
         return {"message": "Batch payments processed successfully"}
