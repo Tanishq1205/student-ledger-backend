@@ -134,19 +134,19 @@ class StudentCreate(BaseModel):
     fee_balance: float = Field(default=0.0, ge=0.0)
 
 
-# 2. POST endpoint to insert a new student
+
 @app.post("/students", status_code=201)
 def create_student(student: StudentCreate):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Parameterized SQL query: Using ? prevents SQL injection attacks
+    
     query = """
     INSERT INTO students (name, course, fee_balance)
     VALUES (?, ?, ?);
     """
     cursor.execute(query, (student.name, student.course, student.fee_balance))
-    conn.commit()  # Saves the transaction permanently to disk
+    conn.commit()  
 
     new_id = cursor.lastrowid
     conn.close()
@@ -157,7 +157,7 @@ def create_student(student: StudentCreate):
         "data": student.dict(),
     }
 
-# 1. Pydantic schema for incoming payment data
+
 class PaymentCreate(BaseModel):
     student_id: int = Field(
         ..., description="The ID of the student making the payment"
@@ -176,62 +176,29 @@ def record_batch_payments(payments: List[PaymentCreate]):
     cursor = conn.cursor()
 
     try:
-       
-        cursor.execute(
-            "SELECT id, name, fee_balance FROM students WHERE id = ?",
-            (payment.student_id,),
-        )
-        student = cursor.fetchone()
-
-        if not student:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Student with ID {payment.student_id} not found.",
+        # Add this loop:
+        for payment in payments:
+            cursor.execute(
+                "SELECT id, name, fee_balance FROM students WHERE id = ?",
+                (payment.student_id,),
             )
+            student = cursor.fetchone()
 
-        current_balance = student["fee_balance"]
+            if not student:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Student with ID {payment.student_id} not found.",
+                )
 
-        # Step B: Business logic validation
-        if payment.amount > current_balance:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Payment amount ({payment.amount}) exceeds current balance ({current_balance}).",
-            )
+            current_balance = student["fee_balance"]
+            
 
-        # Step C: Insert payment record
-        cursor.execute(
-            "INSERT INTO payments (student_id, amount) VALUES (?, ?)",
-            (payment.student_id, payment.amount),
-        )
-
-        # Step D: Deduct balance from student record
-        new_balance = current_balance - payment.amount
-        cursor.execute(
-            "UPDATE students SET fee_balance = ? WHERE id = ?",
-            (new_balance, payment.student_id),
-        )
-
-        # Step E: Commit both operations together
         conn.commit()
+        return {"message": "Batch payments processed successfully"}
 
-        return {
-            "message": "Payment recorded successfully",
-            "student_id": payment.student_id,
-            "student_name": student["name"],
-            "amount_paid": payment.amount,
-            "remaining_balance": new_balance,
-        }
-
-    except HTTPException:
-        # Re-raise explicit HTTP errors without rolling back manually
+    except Exception:
         conn.rollback()
         raise
-    except Exception as e:
-        # Roll back changes on unexpected server errors
-        conn.rollback()
-        raise HTTPException(
-            status_code=500, detail=f"Transaction failed: {str(e)}"
-        )
     finally:
         conn.close()
 
@@ -240,7 +207,7 @@ def get_financial_summary():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Query 1: Overall totals across the entire institution
+   
     overall_query = """
     SELECT 
         COUNT(id) AS total_students,
@@ -250,7 +217,7 @@ def get_financial_summary():
     cursor.execute(overall_query)
     overall_stats = dict(cursor.fetchone())
 
-    # Query 2: Total cash collected from all completed payments
+    
     revenue_query = """
     SELECT 
         COALESCE(SUM(amount), 0.0) AS total_revenue_collected,
@@ -260,7 +227,7 @@ def get_financial_summary():
     cursor.execute(revenue_query)
     revenue_stats = dict(cursor.fetchone())
 
-    # Query 3: Breakdown per student (aggregating payments made vs remaining balance)
+    
     breakdown_query = """
     SELECT 
         s.id,
