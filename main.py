@@ -9,17 +9,20 @@ def init_db():
     conn = sqlite3.connect("test.db")
     cursor = conn.cursor()
     
+    # Drop previous mismatched table so it can be rebuilt cleanly
+    cursor.execute("DROP TABLE IF EXISTS students")
     
+    # Create students table with fee_balance
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS students (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             course TEXT NOT NULL,
-            balance INTEGER DEFAULT 0
+            fee_balance INTEGER DEFAULT 0
         )
     """)
 
-    
+    # Create payments table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS payments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,22 +33,19 @@ def init_db():
         )
     """)
 
-    
-    cursor.execute("SELECT COUNT(*) FROM students")
-    if cursor.fetchone()[0] == 0:
-        cursor.executemany("""
-            INSERT INTO students (name, course, balance)
-            VALUES (?, ?, ?)
-        """, [
-            ("Tanishq Dethe", "Computer Science", 1500),
-            ("Aarav Sharma", "Information Technology", 0),
-            ("Rohan Patil", "Data Science", 3200),
-            ("Neha Verma", "AI & ML", 4500)
-        ])
+    # Seed starter records
+    cursor.executemany("""
+        INSERT INTO students (name, course, fee_balance)
+        VALUES (?, ?, ?)
+    """, [
+        ("Tanishq Dethe", "Computer Science", 1500),
+        ("Aarav Sharma", "Information Technology", 0),
+        ("Rohan Patil", "Data Science", 3200),
+        ("Neha Verma", "AI & ML", 4500)
+    ])
 
     conn.commit()
     conn.close()
-
 
 init_db()
 
